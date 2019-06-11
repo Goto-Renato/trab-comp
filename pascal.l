@@ -14,65 +14,104 @@ void commenteof();
 
 %}
 
+NQUOTE [^']
 %%
 
-"and"   {printf("%s\n", yytext);}
-"array"   {printf("%s\n", yytext);}
-"case"   {printf("%s\n", yytext);}
-"const"   {printf("%s\n", yytext);}
-"div"   {printf("%s\n", yytext);}
-"do"    {printf("%s\n", yytext);}
-"downto"  {printf("%s\n", yytext);}
-"else"   {printf("%s\n", yytext);}
-"end"   {printf("%s\n", yytext);}
-"extern"|"external" {printf("%s\n", yytext);}
-"for"   {printf("%s\n", yytext);}
-"forward"  {printf("%s\n", yytext);}
-"function" {printf("%s\n", yytext);}
-"goto"   {printf("%s\n", yytext);}
-"if"    {printf("%s\n", yytext);}
-"in"    {printf("%s\n", yytext);}
-"label"   {printf("%s\n", yytext);}
-"mod"   {printf("%s\n", yytext);}
-"nil"   {printf("%s\n", yytext);}
-"not"   {printf("%s\n", yytext);}
-"of"    {printf("%s\n", yytext);}
-"or"    {printf("%s\n", yytext);}
-"otherwise" {printf("%s\n", yytext);}
-"packed"  {printf("%s\n", yytext);}
-"begin"   {printf("%s\n", yytext);}
-"file"   {printf("%s\n", yytext);}
-"procedure" {printf("%s\n", yytext);}
-"program"  {printf("%s\n", yytext);}
-"record"  {printf("%s\n", yytext);}
-"repeat"  {printf("%s\n", yytext);}
-"set"   {printf("%s\n", yytext);}
-"then"   {printf("%s\n", yytext);}
-"to"    {printf("%s\n", yytext);}
-"type"   {printf("%s\n", yytext);}
-"until"   {printf("%s\n", yytext);}
-"var"   {printf("%s\n", yytext);}
-"while"   {printf("%s\n", yytext);}
-"with"   {printf("%s\n", yytext);}
-[a-zA-z_][a-zA-z_0-9]* {printf("%s\n", yytext);}
-[0-9]+ {printf("%s\n", yytext);}
-[0-9]+"."[0-9]+ {printf("%s\n", yytext);}
-"||" {printf("%s\n", yytext);}
-"&&" {printf("%s\n", yytext);}
-"..." {printf("%s\n", yytext);}
-"=="|"!=" {printf("%s\n", yytext);}
-"<="|">=" {printf("%s\n", yytext);}
-">>"|"<<" {printf("%s\n", yytext);}
-"++"|"--" {printf("%s\n", yytext);}
-"->" {printf("%s\n", yytext);}
-"*="|"/="|"+="|"%="|">>="|"-="|"<<="|"&="|"^="|"|="|":=" {printf("%s\n", yytext);}
-";"|"="|","|"{"|"}"|"("|")"|"["|"]"|"*"|"+"|"-"|"/"|"?"|":"|"&"|"|"|"^"|"!"|"~"|"%"|"<"|">"	{printf("%s\n", yytext);}
-"'"."'" {printf("%s\n", yytext);}
-\"(\\.|[^\"])*\" {printf("%s\n", yytext);}
-"//"(\\.|[^\n])*[\n] ;
-[/][*]([^*]|[*]*[^*/])*[*]+[/] ;
-[ \t] ;
+"and"   return(AND);
+"array"   return(ARRAY);
+"case"   return(CASE);
+"const"   return(CONST);
+"div"   return(DIV);
+"do"    return(RETURN);
+"downto"  return(DOWNTO);
+"else"   return(ELSE);
+"end"   return(END);
+"extern"|"external" return(EXTERNAL);
+"for"   return(FOR);
+"forward"  return(FORWARD);
+"function" return(FUNCTION);
+"goto"   return(GOTO);
+"if"    return(IF);
+"in"    return(IN);
+"label"   return(LABEL);
+"mod"   return(MOD);
+"nil"   return(NIL);
+"not"   return(NOT);
+"of"    return(OF);
+"or"    return(OR);
+"otherwise" return(OTHERWISE);
+"packed"  return(PACKED);
+"begin"   return(PBEGIN);
+"file"   return(PFILE);
+"procedure" return(PROCEDURE);
+"program"  return(PROGRAM);
+"record"  return(RECORD);
+"repeat"  return(REPEAT);
+"set"   return(SET);
+"then"   return(THEN);
+"to"    return(TO);
+"type"   return(TYPE);
+"until"   return(UNTIL);
+"var"   return(VAR);
+"while"   return(WHILE);
+"with"   return(WITH);
+[a-zA-Z]([a-zA-Z0-9])+  return(IDENTIFIER);
+
+":="    return(ASSIGNMENT);
+'({NQUOTE}|'')+'  return(CHARACTER_STRING);
+":"    return(COLON);
+","    return(COMMA);
+[0-9]+    return(DIGSEQ);
+"."    return(DOT);
+".."    return(DOTDOT);
+"="    return(EQUAL);
+">="    return(GE);
+">"    return(GT);
+"["    return(LBRAC);
+"<="    return(LE);
+"("    return(LPAREN);
+"<"    return(LT);
+"-"    return(MINUS);
+"<>"    return(NOTEQUAL);
+"+"    return(PLUS);
+"]"    return(RBRAC);
+[0-9]+"."[0-9]+   return(REALNUMBER);
+")"    return(RPAREN);
+";"    return(SEMICOLON);
+"/"    return(SLASH);
+"*"    return(STAR);
+"**"    return(STARSTAR);
+"->"   |
+"^"    return(UPARROW);
+
+"(*"   |
+"{"    { register int c;
+     while ((c = input()))
+     {
+      if (c == '}')
+       break;
+      else if (c == '*')
+      {
+       if ((c = input()) == ')')
+        break;
+       else
+        unput (c);
+      }
+      else if (c == '\n')
+       line_no++;
+      else if (c == 0)
+       commenteof();
+     }
+    }
+
+[ \t\f]    ;
+
 \n    line_no++;
+
+.    { fprintf (stderr,
+    "'%c' (0%o): illegal charcter at line %d\n",
+     yytext[0], yytext[0], line_no);
+    }
 
 %%
 
