@@ -15,4 +15,5 @@ b:=b+2;
 a:=a-1;
 end;
 if a<> b then write(a);
+a++;
 end.
